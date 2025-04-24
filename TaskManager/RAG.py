@@ -1,6 +1,7 @@
 from fetchAWS import OPENAI_API_KEY
 #from fetchLocal import OPENAI_API_KEY  # use this if importing from a local .env file
-
+from svmmodel import predict_input
+import time
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.vectorstores import Chroma
@@ -65,9 +66,14 @@ conversation = ConversationalRetrievalChain.from_llm(
 
 # start the conversation
 while True:
-    question = input(str(("You: ")))
-    if question == "exit":
-        break
+    start_time = time.time()
+    question = "system data: "
+    
+    for response in predict_input(interval=5):
+        question += str(response) + "\n"  # add the response
+        if time.time() - start_time >= 180:  # 3 minutes
+            break
+    
     answer = conversation.invoke({"question": question})
     #print(answer)
     print() 

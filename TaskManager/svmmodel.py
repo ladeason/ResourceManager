@@ -51,6 +51,14 @@ def predict_input(interval=1):
             #print(f"{runq_sz}    {plist_sz}   {ldavg_1}  {ldavg_5}  {ldavg_15}   {prediction[0]}")
             print(f"{runq_sz:<10}{plist_sz:<11}{ldavg_1:<10.4f}{ldavg_5:<10.4f}{ldavg_15:<11.4f}{prediction[0]}")
             #print(f'Predicted label: {prediction[0]}')
+            yield{
+                "runq_sz":runq_sz,
+                "plist_sz":plist_sz,
+                "ldavg_1":ldavg_1,
+                "ldavg_5":ldavg_5,
+                "ldavg_15":ldavg_15,
+                "prediction":prediction
+            }
             time.sleep(interval)
     except KeyboardInterrupt:
         print("\n Monitoring stopped")
