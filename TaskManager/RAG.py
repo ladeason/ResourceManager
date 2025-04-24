@@ -11,17 +11,24 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.prompts import PromptTemplate
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
+#same path and collection name used to make the DB
+persist_directory = 'chroma_db'
+collection_name="my_collection"
 
-# loading text
-loader = TextLoader("example.txt")
-documents = loader.load()
-
-# splitting
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-chunks = text_splitter.split_documents(documents)
-#creating the vector store
 embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-vectorstores = Chroma.from_documents(chunks, embeddings)
+
+#establish db 
+vectordb = Chroma(
+    collection_name=collection_name,
+    embedding_function=embeddings,
+    persist_directory=persist_directory
+)
+
+# set up retriever
+retriever = vectordb.as_retriever(
+    search_type="similarity",
+    search_kwargs={"k": 3}
+)
 
 # set up memory
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
@@ -50,7 +57,7 @@ llm = ChatOpenAI(model_name="gpt-4", temperature=0, openai_api_key=OPENAI_API_KE
 
 conversation = ConversationalRetrievalChain.from_llm(
     llm=llm,
-    retriever=vectorstores.as_retriever(),
+    retriever=retriever,
     memory=memory,
     combine_docs_chain_kwargs={"prompt": custom_prompt},
     condense_question_prompt=no_rephrase_prompt
